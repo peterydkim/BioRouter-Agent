@@ -1,0 +1,30 @@
+# BioRouter static site.
+#
+# The web app carries no copy of the permission matrix. `build_web.py` derives
+# web/data/ruleset.json from rulesets/ruleset.v1.json at build time, so the
+# deployed site cannot drift from the canonical ruleset — a second copy would
+# become a second source of truth, and the one on the website is the one people
+# would actually read.
+
+[build]
+  command = "python3 tools/build_web.py"
+  publish = "web"
+
+[build.environment]
+  PYTHON_VERSION = "3.9"
+
+# No server, no functions, no forms, no analytics. The router never receives
+# the data it governs, and a static page with no backend cannot.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+    Content-Security-Policy = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
+
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    Cache-Control = "public, max-age=60, must-revalidate"

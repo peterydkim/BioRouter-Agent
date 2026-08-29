@@ -1,0 +1,66 @@
+{
+  "_doctrine": "NO FIGURE IN THIS FILE IS A QUOTE. Every rate is an editable placeholder chosen to be defensible as an order of magnitude, not accurate for your company. The design goal is that the whole model re-runs the day a negotiated rate lands, which is why these live in JSON rather than inside prose or a spreadsheet somebody owns privately.",
+  "currency": "USD",
+  "last_updated": "2026-08-24",
+  "updated_by": "UNASSIGNED",
+  "confidence": "PLACEHOLDER. Replace each rate with a contracted figure and change its confidence to QUOTED before any of this reaches a budget conversation.",
+
+  "seat_rates_per_year": {
+    "enclave": {"rate": 0, "confidence": "structural", "basis": "No vendor seat fee. Cost sits in infrastructure below."},
+    "gxp": {"rate": 0, "confidence": "structural", "basis": "No vendor seat fee. Cost sits in qualification below."},
+    "claude-ent": {"rate": 720, "confidence": "PLACEHOLDER", "basis": "Enterprise seat, list-adjacent. Negotiated rates vary widely with volume and term."},
+    "openai-ent": {"rate": 720, "confidence": "PLACEHOLDER", "basis": "Enterprise seat, list-adjacent."},
+    "gemini-ent": {"rate": 600, "confidence": "PLACEHOLDER", "basis": "Enterprise seat, list-adjacent."},
+    "copilot": {"rate": 360, "confidence": "PLACEHOLDER", "basis": "Per-user M365 add-on, list-adjacent."}
+  },
+
+  "agentic_usage": {
+    "rate_per_thousand_runs": 18,
+    "confidence": "PLACEHOLDER",
+    "basis": "Blended token cost for a multi-step agentic run with tool calls. Highly sensitive to context length and step count.",
+    "warning": "THIS IS THE VOLATILE LINE AND THE ONE THAT BREAKS BUDGETS. A heavy agentic coding user can generate one to two orders of magnitude more spend than a chat user. Model the tail of the distribution, not the mean. Note also that enterprise plans with usage caps constrain exactly the power users whose productivity justifies the program, which is a real adoption risk and not only a cost one."
+  },
+
+  "infrastructure_per_seat_per_year": {
+    "enclave": {"rate": 2400, "confidence": "PLACEHOLDER", "basis": "GPU or managed-endpoint compute, storage, network, and the operations share for a private deployment. Dominated by whether you host weights or call a private endpoint."},
+    "gxp": {"rate": 1800, "confidence": "PLACEHOLDER", "basis": "Qualified environment hosting plus change-control overhead."},
+    "commercial_default": {"rate": 45, "confidence": "PLACEHOLDER", "basis": "SSO, DLP integration, logging and admin per seat."}
+  },
+
+  "program_staffing": {
+    "product_owner_fte": {"value": 1.0, "basis": "Product ownership, stakeholder liaison, enablement. The role this system accompanies."},
+    "security_liaison_fte": {"value": 0.25, "basis": "Security and privacy reconciliation support."},
+    "eval_engineering_fte": {"value": 0.25, "basis": "Keeps the harness running and the packs current."},
+    "qa_csv_fte": {"value": 0.25, "basis": "Only where a GxP path is in scope. Drop to zero otherwise.", "conditional_on": "gxp-record in scope"},
+    "fully_loaded_fte_cost": {"rate": 210000, "confidence": "PLACEHOLDER", "basis": "Fully loaded annual cost including benefits and overhead."}
+  },
+
+  "evaluation": {
+    "cost_per_revalidation": {"rate": 14000, "confidence": "PLACEHOLDER", "basis": "One model version across the active packs: engineering time, API spend for n>=5 repeats across arms, domain-reviewer time for the human-review queue."},
+    "revalidations_per_year": {"value": 4, "basis": "Frontier model versions ship faster than quarterly. Four is a floor, not a plan."},
+    "note": "This is a budget line, not an afterthought. The re-benchmark cadence is the durable asset, because no single benchmark result survives two quarters."
+  },
+
+  "exception_handling": {
+    "cost_per_conditional_gate": {"rate": 6500, "confidence": "PLACEHOLDER", "basis": "Approver time, documentation, and the requester's waiting cost for one conditional path review."},
+    "note": "Multiply by the number of conditional gates in the routed path. This is where the recurring cost of a governance program actually lives, and it is the line that most proposals omit entirely."
+  },
+
+  "continuity_reserve": {
+    "percent_of_license_plus_reval": 15,
+    "applies_to": "any platform with continuity_flags level = watch",
+    "confidence": "PLACEHOLDER",
+    "basis": "Sized on the observed precedent of a production system re-pointed to a different vendor on roughly seventy-two hours' notice, requiring re-engineering and revalidation of a retrieval pipeline."
+  },
+
+  "gxp_premium": {
+    "initial_qualification": {"rate": 120000, "confidence": "PLACEHOLDER", "basis": "Validation of a non-deterministic system for a defined context of use: protocols, execution, documentation, QA review."},
+    "requalification_per_model_version": {"rate": 35000, "confidence": "PLACEHOLDER", "basis": "Change control and revalidation when the underlying model version moves."},
+    "warning": "THIS LINE ROUTINELY DWARFS LICENSING AND IS ROUTINELY FORGOTTEN AT PROPOSAL TIME. It is also the reason a validated instance lags frontier model versions: every version bump is a change-control event, and that lag is the price of qualification rather than a defect."
+  },
+
+  "renewal_posture": {
+    "doctrine": "When a pricing agreement lapses without a published successor rate, do NOT carry the lapsed rate forward as though it holds. Model the renewal as a range, state the lapse date, and name which workflows become uneconomic at the high end. Assuming a promotional rate persists is how a program discovers its budget problem a quarter late.",
+    "scenario_multipliers": {"low": 0.8, "expected": 1.0, "high": 1.6}
+  }
+}

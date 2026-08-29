@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BioRouter — which AI platform am I permitted to use?</title>
+<meta name="description" content="A governed routing layer over the generative AI platforms a biotech or pharmaceutical company already licenses. Permission and capability, scored separately.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="sketch-banner" role="alert">
+  <div class="wrap">
+    <strong>Design sketch — not a tested or validated system.</strong>
+    Nobody has reviewed this matrix: no security, privacy, QA, legal or export
+    sign-off exists, no capability score has ever been measured, and no task pack
+    has been run against a real model. <b>Do not use it for a real routing,
+    compliance, procurement or regulatory decision.</b>
+    <a href="#panel-state" id="sketchMore">What is and is not real &rarr;</a>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">◱</span>
+      <div>
+        <h1>BioRouter</h1>
+        <p class="tagline">Which platform am I permitted to use, how good is it actually, and who signs?</p>
+      </div>
+    </div>
+    <div id="freshness" class="freshness" role="status"></div>
+  </div>
+</header>
+
+<nav class="tabs wrap" role="tablist" aria-label="Sections">
+  <button role="tab" id="tab-route" aria-controls="panel-route" aria-selected="true" data-panel="route">Route a request</button>
+  <button role="tab" id="tab-matrix" aria-controls="panel-matrix" aria-selected="false" data-panel="matrix">Permission matrix</button>
+  <button role="tab" id="tab-classes" aria-controls="panel-classes" aria-selected="false" data-panel="classes">Data classes</button>
+  <button role="tab" id="tab-state" aria-controls="panel-state" aria-selected="false" data-panel="state">Honest state</button>
+</nav>
+
+<main id="main" class="wrap">
+
+  <!-- ─────────────────────────────── ROUTE ─────────────────────────────── -->
+  <section id="panel-route" role="tabpanel" aria-labelledby="tab-route">
+
+    <div class="privacy-note">
+      <strong>This page never receives your data.</strong> It is a static site with
+      no server and no network calls — the whole ruleset is evaluated in your
+      browser. Describe the <em>class</em> of material, never the material. Nothing
+      you select here is transmitted, logged, or stored anywhere.
+    </div>
+
+    <form id="routeForm" class="controls" autocomplete="off">
+      <div class="field">
+        <label for="work">Work type</label>
+        <select id="work"></select>
+        <p class="hint" id="workHint"></p>
+      </div>
+
+      <div class="field">
+        <label for="dclass">Data class — what enters the prompt</label>
+        <select id="dclass"></select>
+        <p class="hint" id="classHint"></p>
+      </div>
+
+      <div class="field">
+        <label for="dest">Where the output goes</label>
+        <select id="dest">
+          <option value="none">Nowhere regulated — internal analysis or draft</option>
+          <option value="submission">A regulatory submission</option>
+          <option value="gxp-record">A GxP record or batch release</option>
+          <option value="safety-case">A pharmacovigilance case</option>
+          <option value="patient-decision">A decision about an identified patient</option>
+        </select>
+        <p class="hint">Destination can raise the class on its own. A prompt containing
+          nothing sensitive still lands in <code>gxp-record</code> if the answer is
+          pasted into a submission module.</p>
+      </div>
+
+      <div class="field">
+        <label for="plat">Platform</label>
+        <select id="plat">
+          <option value="">Recommend one for me</option>
+        </select>
+        <p class="hint">Ask about a specific platform if a scientist has one in mind.
+          A blocked answer returns three routes, never a dead end.</p>
+      </div>
+
+      <div class="field">
+        <label for="juris">Jurisdiction</label>
+        <select id="juris">
+          <option value="US">United States</option>
+          <option value="EU">EU</option>
+          <option value="UK">UK</option>
+          <option value="JP">Japan</option>
+          <option value="multi">Multiple</option>
+        </select>
+        <p class="hint">The ruleset has <strong>no jurisdiction axis yet</strong> (open item 5).
+          Selecting EU or UK adds a warning, not a different verdict.</p>
+      </div>
+    </form>
+
+    <div id="scopeWarn" class="callout scope" hidden></div>
+    <div id="destWarn" class="callout escalate" hidden></div>
+    <div id="jurisWarn" class="callout warn" hidden></div>
+
+    <div id="answer" aria-live="polite"></div>
+  </section>
+
+  <!-- ────────────────────────────── MATRIX ─────────────────────────────── -->
+  <section id="panel-matrix" role="tabpanel" aria-labelledby="tab-matrix" hidden>
+    <p class="lede">All <span id="cellCount"></span> cells. Every verdict carries the rule
+      that produced it — select a cell to read it verbatim. Nothing here is inferred:
+      a cell with no rule is a missing cell, not a permission.</p>
+    <div class="legend">
+      <span><i class="sw v2"></i> Permitted — self-service</span>
+      <span><i class="sw v1"></i> Conditional — named approver signs</span>
+      <span><i class="sw v0"></i> Blocked — escalation, no price</span>
+    </div>
+    <div class="tablewrap">
+      <table id="matrix" class="matrix"></table>
+    </div>
+    <div id="cellDetail" class="cell-detail" aria-live="polite"></div>
+  </section>
+
+  <!-- ────────────────────────────── CLASSES ────────────────────────────── -->
+  <section id="panel-classes" role="tabpanel" aria-labelledby="tab-classes" hidden>
+    <p class="lede">The classification ladder is a <em>routing</em> ladder, not a
+      sensitivity score. Provenance can outrank content, and destination can outrank
+      both.</p>
+    <div id="classList" class="class-list"></div>
+  </section>
+
+  <!-- ─────────────────────────────── STATE ─────────────────────────────── -->
+  <section id="panel-state" role="tabpanel" aria-labelledby="tab-state" hidden>
+    <p class="lede">What this system knows, and what it only assumes. Published because
+      an auditor should learn every weakness of it from us, in writing, before they
+      find it.</p>
+    <div id="stateCards" class="cards"></div>
+
+    <h2>Capability is not permission</h2>
+    <p id="whatIsReal"><strong>What is real here, stated plainly.</strong> The
+      structure is real: the separation of permission from capability, the basis
+      tags, the refusal to price a blocked path, the named-approver requirement,
+      the freshness clock. The <em>content</em> is not: every verdict is a
+      hypothesis derived from public regulatory text, every fit score is an
+      assumption, and every cost figure in the underlying repository is a
+      placeholder. The project's code has automated tests and CI, which
+      establishes that the harness behaves as documented — not that any verdict
+      here is correct for your company. Treat this as a worked argument about how
+      such a system should be built, not as an answer about your estate.</p>
+
+    <p>Permission comes from policy and is binary-ish. Capability fit is a 1–5 score
+      on a task. A platform can be fully permitted and bad at the job. These are
+      never merged into one number, because the two require opposite responses —
+      one is a legal conversation, the other is an engineering one.</p>
+
+    <h2>Every fit score carries a basis tag</h2>
+    <table class="basis-table">
+      <thead><tr><th>Tag</th><th>Means</th><th>Count</th></tr></thead>
+      <tbody id="basisRows"></tbody>
+    </table>
+    <p class="note" id="basisNote"></p>
+
+    <h2>What is not ready</h2>
+    <ul class="gaps">
+      <li><strong>The matrix is unsigned.</strong> No security, privacy, QA or legal
+        reviewer has walked it line by line.</li>
+      <li><strong>Nine open items</strong> are logged in the changelog, including
+        which Data Use Agreements carry non-transferability clauses reaching model
+        prompting — the cell most likely to be wrong in any real estate.</li>
+      <li><strong>No jurisdiction axis.</strong> Several de-identified clinical cells
+        likely split by jurisdiction and currently do not.</li>
+      <li><strong>Zero measured capability scores.</strong> Every fit number is
+        inference from vendor documentation, and is labelled as such.</li>
+      <li><strong>Seven of ten of this project's own doctrinal claims are
+        UNVERIFIED</strong> and tagged in its claims register rather than asserted.</li>
+      <li><strong>No cost figures appear in this app at all.</strong> Every rate in
+        the repository is a placeholder, and pricing a path nobody may use is how a
+        governance tool becomes a liability.</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <p><strong>Design sketch. Not legal, regulatory, or clinical advice.</strong>
+    Untested and unreviewed: an artifact for reconciliation with your own counsel,
+    security and QA, not a system of record and not a basis for a decision.
+    Independent work product, not affiliated with or endorsed by NIH, HHS, or any
+    model vendor.</p>
+  <p class="meta" id="buildMeta"></p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

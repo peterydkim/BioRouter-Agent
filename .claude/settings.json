@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(./**)",
+      "Grep(./**)",
+      "Glob(./**)",
+      "Bash(python3 evals/run_eval.py:*)",
+      "Bash(python3 tools/validate.py:*)",
+      "Bash(python3 tools/test_scorers.py:*)",
+      "Bash(python3 -c:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(wc:*)"
+    ],
+    "deny": [
+      "Read(./**/*.env)",
+      "Read(./**/secrets/**)"
+    ]
+  },
+  "_note": "Paths are repo-relative so this file is portable; it previously hard-coded one contributor's home directory, which also meant the rules matched nothing after the directory was renamed. The eval runner reaches model APIs when --provider is not 'dry'. Keys come from ANTHROPIC_API_KEY / OPENAI_API_KEY / BIOROUTER_LOCAL_URL in the environment and are never written to any file in this repository. --allow-code-exec executes model-generated code and belongs in a container. Never point --provider local at an endpoint holding regulated data, and never place regulated data in a task pack."
+}

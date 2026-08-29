@@ -1,0 +1,56 @@
+name: ci
+
+# The repository's invariants live mostly in agent prose, which is a norm.
+# These two jobs are the part that is a control, so they gate every change.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Repository invariants
+        run: python3 tools/validate.py
+
+      - name: Scorer regression tests
+        run: python3 tools/test_scorers.py
+
+      - name: Harness smoke test (dry provider, measures nothing)
+        run: |
+          for pack in evals/taskpacks/*.json; do
+            python3 evals/run_eval.py --pack "$pack" \
+              --models model-a,model-b --repeats 5 --provider dry
+          done
+
+      - name: Web build derives from the canonical ruleset
+        run: |
+          python3 tools/build_web.py
+          test -f web/data/ruleset.json
+          python3 - <<'PY'
+          import json
+          w = json.load(open("web/data/ruleset.json"))
+          r = json.load(open("rulesets/ruleset.v1.json"))
+          assert w["ruleset_version"] == r["ruleset_version"], "web payload version drift"
+          assert w["stats"]["cells"] == sum(len(x) for x in r["matrix"].values()), "cell count drift"
+          assert w["matrix"] == r["matrix"], "web matrix differs from the canonical matrix"
+          print("web payload matches ruleset %s (%d cells)" % (w["ruleset_version"], w["stats"]["cells"]))
+          PY
+
+      - name: No dry run may be promotable
+        run: |
+          if grep -l '"promotable_to_EVIDENCE": true' evals/results/*.json 2>/dev/null; then
+            echo "A dry run was marked promotable. That gate is load-bearing."
+            exit 1
+          fi
+          echo "ok"

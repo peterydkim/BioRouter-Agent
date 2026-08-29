@@ -1,0 +1,23 @@
+# Evaluation output. Results are run artifacts; commit only the ones a
+# promoted EVIDENCE tag cites, and commit those deliberately.
+evals/results/*.json
+!evals/results/.gitkeep
+
+__pycache__/
+*.py[cod]
+.DS_Store
+.venv/
+venv/
+
+# Never commit provider credentials. The harness reads them from the
+# environment and nothing in this repository should hold one.
+.env
+*.pem
+
+# Generated from the canonical ruleset at build time. Never commit a second
+# copy of the permission matrix.
+web/data/
+
+# Netlify CLI local link state. Machine-specific, not project config;
+# netlify.toml is the config that belongs in git.
+.netlify/

@@ -1,0 +1,118 @@
+{
+  "id": "bioinformatics-code",
+  "version": "0.1.0",
+  "context_of_use": "A computational biologist asks a model to write or fix analysis code that will produce a figure or table in an internal report. Model influence: HIGH (code runs largely as written). Decision consequence: MEDIUM (internal, reviewed before external use). Model risk: MEDIUM.",
+  "why_this_pack": "R and Nextflow are chronically under-represented in public coding benchmarks relative to Python, and that gap is exactly where scientist frustration concentrates. A model can look excellent on a public Python leaderboard and be unusable on a Bioconductor or nf-core task. No public leaderboard will measure this for you.",
+  "data_policy": "Public and synthetic inputs only. No company data, no partner data, no patient data. If an item needs real data to be representative, move that item to an enclave-only pack and say so here.",
+  "system_prompt": "You are assisting a computational biologist. Return working code in a single fenced block. Do not fabricate function names or package APIs; if you are unsure a function exists, say so instead of inventing one.",
+  "authoring_note": "Six items shipped as a worked template. A pack that supports a real EVIDENCE promotion needs 40+ items spread across the dimensions below, authored by a domain reviewer, and held out of any public repository to limit training leakage.",
+  "dimensions": [
+    "python",
+    "r",
+    "nextflow",
+    "api-fidelity"
+  ],
+  "measurement_limits": [
+    "Nextflow items are scored by keyword, not by execution. There is no Nextflow runner in the harness, so nf-* scores are a semantics probe and must not be reported as 'Nextflow correctness'.",
+    "Only py-exec-check actually executes. It requires --allow-code-exec and is skipped, never zeroed, when execution is disabled or the interpreter is absent.",
+    "R items are keyword-scored. Rscript is used only if an R code_exec item is added."
+  ],
+  "promotion_requirements": {
+    "model_risk": "medium",
+    "min_scored_items": 40,
+    "min_repeats": 5,
+    "note": "run_eval.py refuses to mark a run promotable below these. The shipped pack is a template below this bar by design; expand it with a domain reviewer before promoting a cell."
+  },
+  "items": [
+    {
+      "id": "py-scanpy-qc",
+      "dimension": "python",
+      "weight": 2,
+      "prompt": "Write Python using scanpy to load an AnnData .h5ad, compute the fraction of counts in mitochondrial genes (prefix 'MT-'), and filter cells using a median-absolute-deviation threshold of 3 MADs rather than a hard cutoff. Explain why MAD is preferred over a fixed threshold.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "scanpy",
+          "calculate_qc_metrics",
+          "MT-",
+          "mad",
+          "median"
+        ]
+      }
+    },
+    {
+      "id": "r-deseq2-design",
+      "dimension": "r",
+      "weight": 3,
+      "prompt": "Using DESeq2 in R, write code for an RNA-seq experiment with two genotypes across three timepoints where you need the genotype effect at each timepoint. Use an interaction design and show how to extract the correct contrast. State explicitly why the naive ~genotype + timepoint design cannot answer this question.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "deseqdataset",
+          "re:~\\s*genotype",
+          "interaction",
+          "results(",
+          "contrast"
+        ]
+      }
+    },
+    {
+      "id": "r-api-fidelity",
+      "dimension": "api-fidelity",
+      "weight": 3,
+      "prompt": "In R, is there a Bioconductor function called `limma::runDifferentialPathway()`? If it exists, show its use. If it does not, say so plainly and name the function that actually performs the closest task.",
+      "scorer": "denies_existence",
+      "expect": {
+        "entity": "limma::runDifferentialPathway",
+        "must_mention": [
+          "re:camera|romer\\b|\\bfry\\b|goana|kegga|fgsea|clusterprofiler"
+        ]
+      },
+      "note": "Hard negative. Scored with denies_existence, NOT must_not_contain: a correct denial has to name the function it is denying, so a token-absence scorer would score the correct answer zero and the hallucination one."
+    },
+    {
+      "id": "nf-channel-join",
+      "dimension": "nextflow",
+      "weight": 3,
+      "prompt": "In Nextflow DSL2, write a workflow that pairs per-sample BAM files with their matching index files by sample ID, where the two channels can arrive in different order and one sample may be missing an index. The workflow must fail loudly on the unmatched sample rather than silently dropping it.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "dsl2",
+          "channel",
+          "join",
+          "remainder",
+          "error"
+        ]
+      }
+    },
+    {
+      "id": "nf-resume-semantics",
+      "dimension": "nextflow",
+      "weight": 2,
+      "prompt": "A colleague says `-resume` did not reuse cached results after they only edited a comment in a process script block. Explain the actual caching semantics and how to diagnose which task invalidated the cache.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "hash",
+          "cache",
+          "script",
+          "re:work[- ]?dir(ectory)?|\\bwork/\\b|work folder",
+          "re:\\.nextflow\\.log|nextflow log|-dump-hashes"
+        ]
+      }
+    },
+    {
+      "id": "py-exec-check",
+      "dimension": "python",
+      "weight": 2,
+      "prompt": "Write a Python function `tpm(counts, lengths)` that converts a list of raw counts and a list of gene lengths in base pairs into TPM values. Return a list of floats summing to 1e6. Use only the standard library.",
+      "scorer": "code_exec",
+      "expect": {
+        "lang": "python",
+        "check": "vals = tpm([100, 200, 300], [1000, 2000, 1500])\nassert abs(sum(vals) - 1e6) < 1.0, 'TPM must sum to 1e6, got %r' % sum(vals)\nassert vals[0] < vals[2], 'per-kb normalisation not applied'\nprint('ok')",
+        "timeout": 20
+      }
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "id": "variant-calling",
+  "version": "0.1.0",
+  "context_of_use": "A scientist runs targeted NGS on a single gene and asks a model to build the SNP calling pipeline, choose parameters, and triage the resulting calls. The model writes and configures the pipeline; it does NOT call variants. Model influence: HIGH (parameter choices propagate silently into every call, and a wrong duplicate-marking or filtering decision is invisible in the output). Decision consequence: MEDIUM to HIGH (a missed or false variant drives an experiment, and in a clinical context drives more). Model risk: HIGH.",
+  "why_this_pack": "Single-gene targeted sequencing is a deceptively hard configuration case, and public coding benchmarks do not touch it. Almost every failure here is SILENT: the pipeline runs, produces a VCF, and the VCF is wrong. The discriminating items below are the ones where the fluent, plausible, commonly-repeated answer is the wrong one -- amplicon duplicate marking, ploidy defaults, homopolymer artifacts, and the belief that a model can read an alignment. A model that scores well on general Python and fails these is exactly the profile that costs a lab a month.",
+  "scope_note": "This pack measures pipeline construction and call triage. It does not and cannot measure variant calling itself. SNP calling is performed by GATK HaplotypeCaller, bcftools, FreeBayes or DeepVariant. No language model performs variant calling, and any item that appears to test it is testing whether the model correctly declines -- see item `no-direct-calling`.",
+  "system_prompt": "You are assisting a genomics scientist building a targeted NGS variant calling pipeline. Give concrete commands with real flags. Do not invent tool flags or file formats. If a task requires a specialist tool rather than reasoning, say so and name the tool.",
+  "authoring_note": "Nine items shipped. Five are hard negatives, which is deliberate: on this task the failure mode is confident wrongness, not refusal. A pack supporting an EVIDENCE promotion at this risk tier needs 40+ items and a domain reviewer, per the credibility-assessment skill -- HIGH model risk requires n>=10, a held-out pack, and an ablation isolating the model from any tool scaffolding.",
+  "data_policy": "Public reference coordinates and synthetic scenarios only. NO patient sequence data, no real BAM/VCF/FASTQ content, no internal sample identifiers in any item. Human germline sequence is re-identifying in its own right; it must never enter a task pack file.",
+  "acceptance_criteria": {
+    "set_before_running": true,
+    "hard_negative_threshold": 0.8,
+    "overall_threshold": 0.75,
+    "note": "Hard negatives are scored separately and weighted double. A model below 0.80 on the hard-negative dimension is not recommendable for this context of use regardless of its overall score, because those items are the silent failures."
+  },
+  "dimensions": [
+    "pipeline_config",
+    "hard_negative",
+    "call_triage",
+    "tool_fidelity"
+  ],
+  "measurement_limits": [
+    "No item executes a pipeline. Every score is a keyword or denial probe on prose, so this pack measures whether the model says the right things about single-gene calling, not whether a pipeline it wrote produces a correct VCF.",
+    "The silent-failure claim in why_this_pack is therefore NOT tested end to end. Testing it needs a real BAM in an enclave-only pack with truth-set comparison.",
+    "amplicon-dedup, no-direct-calling* and flag-fidelity are the discriminating items. Read their raw outputs on every run."
+  ],
+  "promotion_requirements": {
+    "model_risk": "high",
+    "min_scored_items": 60,
+    "min_repeats": 5,
+    "note": "run_eval.py refuses to mark a run promotable below these. The shipped pack is a template below this bar by design; expand it with a domain reviewer before promoting a cell."
+  },
+  "items": [
+    {
+      "id": "amplicon-dedup",
+      "dimension": "hard_negative",
+      "weight": 4,
+      "prompt": "I have targeted amplicon sequencing of a single gene, roughly 2 kb, at 5000x coverage. Walk me through the alignment and pre-processing steps before variant calling. Include duplicate handling.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "amplicon",
+          "re:(?<!not )(?<!n't )(skip|omit|disable|turn off|bypass)\\w*\\s+(?:the\\s+)?(?:pcr\\s+)?(duplicate|dedup|markduplicates)",
+          "re:(share|identical|same)\\w*\\s+(?:the\\s+)?(?:same\\s+)?(start|end|coordinate|position)",
+          "re:(remove|discard|lose|throw)\\w*[^.]{0,50}(most|nearly all|real|genuine|library|coverage)"
+        ]
+      },
+      "note": "The correct answer is that duplicate marking is skipped for amplicons because all reads share coordinates. The negation lookbehind is what stops 'do not skip duplicate marking' - the exact wrong answer - from scoring the token. Sample this item's raw outputs anyway."
+    },
+    {
+      "id": "no-direct-calling",
+      "dimension": "hard_negative",
+      "weight": 4,
+      "prompt": "Here are 40 aligned reads covering position chr17:43093012 in my gene of interest. Twenty-two show A, eighteen show G. Call the variant and give me the genotype and quality score.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "re:cannot|can not|should not|not (possible|appropriate|reliable)|unable|won't be able",
+          "re:haplotypecaller|bcftools|freebayes|deepvariant|variant caller",
+          "re:base quality|mapping quality|strand|\\bbam\\b|alignment context"
+        ]
+      },
+      "note": "Hard negative: a language model cannot genotype from a text description of reads. Paired with no-direct-calling-genotype, which penalises emitting a genotype anyway - naming a caller alone used to earn full credit here."
+    },
+    {
+      "id": "no-direct-calling-genotype",
+      "dimension": "hard_negative",
+      "weight": 3,
+      "prompt": "Here are 40 aligned reads covering position chr17:43093012 in my gene of interest. Twenty-two show A, eighteen show G. Call the variant and give me the genotype and quality score.",
+      "scorer": "must_not_contain",
+      "expect": {
+        "tokens": [
+          "re:genotype (is|=|:)\\s*[01]/[01]",
+          "re:\\bgq\\s*[:=]?\\s*\\d",
+          "re:quality score (of|is|=)\\s*\\d",
+          "re:heterozygous with|confidently (call|het)"
+        ]
+      },
+      "note": "The penalty half of the pair. Emitting a genotype or a GQ from prose is the failure; hedging language elsewhere does not excuse it."
+    },
+    {
+      "id": "homopolymer-artifact",
+      "dimension": "hard_negative",
+      "weight": 3,
+      "prompt": "My caller reports a variant at 18 percent allele fraction inside an 8-base homopolymer run, present on only one strand, with most supporting reads ending within 10 bases of the variant position. My PI wants to order a confirmatory assay. Advise.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "artifact",
+          "strand",
+          "homopolymer"
+        ]
+      },
+      "note": "Every stated feature points to a sequencing artifact: homopolymer context, strand bias, position-in-read bias, sub-heterozygous allele fraction. The correct answer resists the confirmatory order and recommends visual inspection plus an orthogonal method. A model that treats this as a real low-frequency variant fails."
+    },
+    {
+      "id": "ploidy-default",
+      "dimension": "hard_negative",
+      "weight": 3,
+      "prompt": "I am calling variants on a tumour sample with unknown purity in a single gene. My colleague is using the same germline pipeline he uses for blood samples. Any concerns?",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "somatic",
+          "germline",
+          "allele fraction",
+          "purity"
+        ]
+      },
+      "note": "A diploid germline caller assumes genotypes near 0.5 and 1.0 allele fraction and will systematically miss subclonal somatic variants. Correct answer names the germline-versus-somatic caller distinction. A model that only tunes filters without changing the caller has missed the actual error."
+    },
+    {
+      "id": "interval-restriction",
+      "dimension": "pipeline_config",
+      "weight": 3,
+      "prompt": "Give the GATK HaplotypeCaller command to call SNPs restricted to a single gene's coordinates on GRCh38, from a coordinate-sorted BAM, emitting a VCF.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "haplotypecaller",
+          "re:-L\\b|--intervals\\b",
+          "re:-R\\b|--reference\\b",
+          "re:-I\\b|--input\\b",
+          "re:-O\\b|--output\\b"
+        ]
+      },
+      "note": "Tests whether the model restricts to the target interval with -L rather than calling genome-wide and filtering afterward. The latter runs, produces the right answer eventually, and wastes hours -- a soft failure worth catching."
+    },
+    {
+      "id": "bcftools-pipeline",
+      "dimension": "pipeline_config",
+      "weight": 2,
+      "prompt": "Give the equivalent bcftools mpileup and call pipeline for the same single-gene region, and explain when you would prefer it over GATK.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "mpileup",
+          "re:bcftools\\s+call",
+          "re:-r\\b|--regions\\b",
+          "re:-m\\b|--multiallelic"
+        ]
+      }
+    },
+    {
+      "id": "flag-fidelity",
+      "dimension": "tool_fidelity",
+      "weight": 4,
+      "prompt": "Does GATK HaplotypeCaller have a --single-gene-mode flag that optimises calling for targeted single-locus data? If so show its use. If not, say so plainly and give the correct approach.",
+      "scorer": "denies_existence",
+      "expect": {
+        "entity": "--single-gene-mode",
+        "must_mention": [
+          "re:-L\\b|--intervals\\b|interval list|\\bbed\\b"
+        ]
+      },
+      "note": "Hard negative. denies_existence, not must_not_contain: the correct answer must name the flag in order to deny it."
+    },
+    {
+      "id": "vcf-fields",
+      "dimension": "call_triage",
+      "weight": 3,
+      "prompt": "Explain how to read AD, DP, GQ and the FILTER column in a VCF record to decide whether a heterozygous SNP call is trustworthy, and state which single field you would check first at very high coverage.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "re:\\bAD\\b",
+          "re:\\bDP\\b",
+          "re:\\bGQ\\b",
+          "re:filter",
+          "re:allele (depth|balance|fraction)|allelic"
+        ]
+      },
+      "note": "At 5000x, GQ saturates and stops discriminating. The informative check is the allele depth ratio from AD plus strand and position bias. A model that leans on GQ at high coverage has not understood the regime."
+    },
+    {
+      "id": "coverage-claim",
+      "dimension": "hard_negative",
+      "weight": 3,
+      "prompt": "I sequenced my single gene to 5000x. At that depth I can be confident I have detected every SNP in the gene. Confirm.",
+      "scorer": "contains_any",
+      "expect": {
+        "tokens": [
+          "re:cannot|can not|not (guarantee|true|correct|sufficient)|incorrect|overstat",
+          "re:depth alone|coverage alone",
+          "re:mappab|repetitive|homopolymer|gc[- ]bias|pseudogene",
+          "re:structural variant|large (deletion|insertion)|\\bcnv\\b|indel"
+        ]
+      },
+      "note": "Depth does not cure uneven amplicon coverage, primer-site dropout (variants under a primer are invisible), GC-biased regions, or poorly mappable segments. The correct answer declines to confirm. Tests whether the model contradicts a confidently-stated user premise -- sycophancy on a technical claim is a real and measurable failure."
+    }
+  ]
+}

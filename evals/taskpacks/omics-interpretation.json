@@ -1,0 +1,104 @@
+{
+  "id": "omics-interpretation",
+  "version": "0.1.0",
+  "context_of_use": "A scientist asks a model to interpret an analysis result and suggest the next experiment. Model influence: MEDIUM. Decision consequence: MEDIUM (drives experiment spend). Model risk: MEDIUM.",
+  "why_this_pack": "Separates domain REASONING from tool ORCHESTRATION. Vendor life-science demos overwhelmingly showcase orchestration -- connectors, pipelines, tool calls -- and the model's own biological judgement is rarely isolated. Every item here is answerable from reasoning alone, with no tool access, which is exactly the point.",
+  "system_prompt": "You are advising a computational biologist. Be specific. If a result is ambiguous, say what additional data would resolve it rather than picking a story.",
+  "authoring_note": "Five template items with a hard-negative design: several have a confounder as the correct answer rather than a biological story. Models that pattern-match to a satisfying narrative fail these, which is the discriminating behaviour worth measuring.",
+  "data_policy": "Public datasets and synthetic scenarios only.",
+  "dimensions": [
+    "variant",
+    "expression",
+    "single_cell",
+    "confounding"
+  ],
+  "measurement_limits": [
+    "Every item is keyword-scored prose. Keywords evidence that the right concept was raised; they do not evidence that the reasoning was sound. Read a sample of raw outputs on every run.",
+    "batch-confound is the discriminating item: the correct answer is that no conclusion is available. A fluent answer that interprets the gene list anyway can still hit some tokens, so read that item's outputs specifically."
+  ],
+  "promotion_requirements": {
+    "model_risk": "medium",
+    "min_scored_items": 40,
+    "min_repeats": 5,
+    "note": "run_eval.py refuses to mark a run promotable below these. The shipped pack is a template below this bar by design; expand it with a domain reviewer before promoting a cell."
+  },
+  "items": [
+    {
+      "id": "vus-reasoning",
+      "dimension": "variant",
+      "weight": 3,
+      "prompt": "A missense variant in BRCA2 has gnomAD allele frequency 0.4 percent, is absent from ClinVar, and falls outside the DNA-binding domain. A clinician asks if it is pathogenic. Reason through the ACMG criteria that apply.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "acmg",
+          "re:allele frequency|\\baf\\b|gnomad",
+          "re:benign|likely benign",
+          "re:ba1|bs1"
+        ]
+      },
+      "note": "The frequency alone is strong evidence against pathogenicity. A model that hedges into 'variant of uncertain significance' without applying the frequency criterion has missed the reasoning."
+    },
+    {
+      "id": "batch-confound",
+      "dimension": "confounding",
+      "weight": 3,
+      "prompt": "In an RNA-seq study, all treated samples were sequenced in March and all controls in September. 8,000 genes are differentially expressed at FDR<0.01. Interpret.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "re:confound",
+          "batch",
+          "re:cannot|can not|impossible|not possible",
+          "re:separat|disentangl|distinguish"
+        ]
+      },
+      "note": "Hard negative. Treatment and batch are perfectly confounded and NO biological conclusion is available. A model that interprets pathways here is producing a confident wrong answer, which is worse than no answer."
+    },
+    {
+      "id": "doublet",
+      "dimension": "single_cell",
+      "weight": 3,
+      "prompt": "A single-cell cluster co-expresses canonical T-cell and monocyte markers, has roughly double the median UMI count, and disappears when the sample is re-run at lower loading concentration. What is it and what do you do?",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "doublet",
+          "re:\\bumi\\b|\\bumis\\b",
+          "re:remov|exclud|filter",
+          "re:scrublet|doubletfinder|loading"
+        ]
+      }
+    },
+    {
+      "id": "ambient",
+      "dimension": "single_cell",
+      "weight": 2,
+      "prompt": "Haemoglobin transcripts appear at low level across every cluster in a PBMC single-cell dataset, including clusters with no erythroid identity. Explain and give the correction approach.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "ambient",
+          "re:soup|soupx|cellbender",
+          "re:correct|remov|subtract"
+        ]
+      }
+    },
+    {
+      "id": "effect-size",
+      "dimension": "expression",
+      "weight": 2,
+      "prompt": "A gene shows log2 fold change 0.15 with adjusted p-value 1e-30 in a study of n=900. A colleague wants to make it the lead target. Advise.",
+      "scorer": "contains_all",
+      "expect": {
+        "tokens": [
+          "re:effect size",
+          "re:power|sample size",
+          "re:significan",
+          "re:biological|clinical"
+        ]
+      },
+      "note": "Statistical significance versus biological relevance at high n. The correct answer resists the target nomination."
+    }
+  ]
+}

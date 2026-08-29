@@ -1,0 +1,1000 @@
+{
+  "ruleset_version": "2.1.0-draft",
+  "last_reconciled": "2026-08-24",
+  "reconciliation_status": "UNSIGNED. No Security, QA, Legal or Privacy review has occurred. Every cell below is a starting hypothesis derived from public regulatory text, not operational guidance. Do not deploy until a named reviewer has walked the matrix line by line.",
+  "freshness_target_days": 90,
+  "stale_after_days": 120,
+  "owner": {
+    "role": "AI Product Lifecycle Owner",
+    "name": "UNASSIGNED",
+    "obligation": "Owns reconciliation, version history and the freshness metric. Does NOT own the underlying policy, which sits with Security, QA, Legal/Privacy and the export-control officer."
+  },
+  "verdict_codes": {
+    "2": {
+      "key": "permitted",
+      "label": "Permitted",
+      "meaning": "Inside the documented envelope. Self-service, no ticket."
+    },
+    "1": {
+      "key": "conditional",
+      "label": "Conditional, needs a named approver",
+      "meaning": "A route exists but a human must sign. The approver role and SLA are on the cell."
+    },
+    "0": {
+      "key": "blocked",
+      "label": "Blocked",
+      "meaning": "No documented route. Output is an escalation, and the cost model switches off."
+    }
+  },
+  "regulatory_anchors": [
+    {
+      "id": "fda-ai-2025",
+      "cite": "FDA draft guidance, Considerations for the Use of Artificial Intelligence to Support Regulatory Decision-Making for Drug and Biological Products (January 2025)",
+      "why": "Establishes context-of-use plus model-influence and decision-consequence as the basis for model risk, and a seven-step credibility assessment. This is the spine of the evaluation harness.",
+      "confidence": "high",
+      "verify": "Confirm final-vs-draft status and any successor before citing to a regulator."
+    },
+    {
+      "id": "part11",
+      "cite": "21 CFR Part 11, electronic records and electronic signatures",
+      "why": "Any AI output that becomes part of a GxP record needs audit trail, attributability and system validation.",
+      "confidence": "high"
+    },
+    {
+      "id": "gamp5",
+      "cite": "ISPE GAMP 5, second edition (2022), including the AI/ML appendix",
+      "why": "Computerized system validation approach for a non-deterministic system. Drives the qualification requirement on the validated instance.",
+      "confidence": "high"
+    },
+    {
+      "id": "ema-ai-2024",
+      "cite": "EMA Reflection paper on the use of AI in the medicinal product lifecycle (September 2024)",
+      "why": "Risk-based expectations across discovery through post-authorization. Human accountability stays with the marketing authorization holder.",
+      "confidence": "high"
+    },
+    {
+      "id": "eu-ai-act",
+      "cite": "Regulation (EU) 2024/1689, the EU AI Act",
+      "why": "GPAI obligations and high-risk classification. Phased application through 2026 and 2027 makes this a live date-sensitive item.",
+      "confidence": "medium",
+      "verify": "Applicability dates and whether any company use case lands in Annex III high-risk. Get this from counsel, not from this file."
+    },
+    {
+      "id": "hipaa-514",
+      "cite": "45 CFR 164.514, de-identification by Safe Harbor or Expert Determination",
+      "why": "Defines what de-identified means in the US. Note it does NOT make the data anonymous under GDPR.",
+      "confidence": "high"
+    },
+    {
+      "id": "gdpr-9",
+      "cite": "GDPR Article 9 special category data, plus Article 28 processor obligations and Chapter V transfer rules",
+      "why": "Health data is special category. Pseudonymized is still personal data, which is the single most common misread in this matrix.",
+      "confidence": "high"
+    },
+    {
+      "id": "ich-e6r3",
+      "cite": "ICH E6(R3) Good Clinical Practice",
+      "why": "Data governance and computerized systems expectations for trial conduct.",
+      "confidence": "medium"
+    },
+    {
+      "id": "dua-nontransfer",
+      "cite": "Non-transferability clauses in consortium Data Use Agreements, CRO master service agreements, and clinical trial agreements",
+      "why": "THE PHARMA ANALOG OF NIH NOT-OD-25-081. Sending partner-controlled data to a third-party model through a prompt can breach transfer restrictions regardless of identifiability or vendor security posture. The bar is the contract, not the risk.",
+      "confidence": "high",
+      "note": "This is the cell most likely to be wrong in your company, because it depends on agreements this file cannot see. Have Legal enumerate them."
+    },
+    {
+      "id": "ear-itar",
+      "cite": "EAR / ITAR export controls, including the deemed-export rule for foreign-national access",
+      "why": "Access by a foreign national inside your own enclave can still be an export. Enclave containment does not resolve this.",
+      "confidence": "medium"
+    },
+    {
+      "id": "durc-pepp",
+      "cite": "United States Government Policy for Oversight of DURC and PEPP (issued May 2024, effective May 2025)",
+      "why": "Dual-use research of concern and enhanced potential pandemic pathogen work carries institutional review obligations upstream of any tool choice.",
+      "confidence": "medium"
+    }
+  ],
+  "platforms": [
+    {
+      "id": "enclave",
+      "name": "Private research enclave",
+      "vendor": "Company-controlled VPC or on-prem deployment of a commercial or open-weights model. No vendor retention, no egress.",
+      "role": "Widest research envelope. The destination for anything the commercial platforms cannot hold.",
+      "analog": "CHIRP in the NIH version."
+    },
+    {
+      "id": "gxp",
+      "name": "Validated GxP instance",
+      "vendor": "Qualified, Part 11 controlled deployment with audit trail and change control.",
+      "role": "The only environment that may touch records supporting a submission or batch release. Slow, expensive, and correct.",
+      "analog": "No NIH equivalent. This is the pharma-specific addition."
+    },
+    {
+      "id": "claude-ent",
+      "name": "Claude Enterprise",
+      "vendor": "Anthropic. Includes Claude Code and the life-sciences connector set.",
+      "role": "Agentic and coding work, literature synthesis, long-document reasoning.",
+      "analog": "Claude at claude.hhs.gov."
+    },
+    {
+      "id": "openai-ent",
+      "name": "ChatGPT Enterprise + Codex",
+      "vendor": "OpenAI.",
+      "role": "Broad use and coding. Deepest install base in most estates.",
+      "analog": "ChatGPT Enterprise at go.hhs.gov/chatgpt."
+    },
+    {
+      "id": "gemini-ent",
+      "name": "Gemini Enterprise",
+      "vendor": "Google, via Workspace or Vertex.",
+      "role": "Multimodal and Google-ecosystem work.",
+      "analog": "Gemini at gemini.hhs.gov."
+    },
+    {
+      "id": "copilot",
+      "name": "Microsoft 365 Copilot",
+      "vendor": "Microsoft, inside the corporate tenant.",
+      "role": "Office productivity grounded in mail, documents and meetings. A different decision with a different owner than the scientific platforms.",
+      "analog": "M365 Copilot in the NIH tenant."
+    }
+  ],
+  "classification_scope": {
+    "_doctrine": "A data class describes WHAT ENTERS THE PROMPT and WHERE THE OUTPUT GOES. It does not describe the subject the scientist works on. This distinction is the difference between a router people use and a router people go around.",
+    "in_prompt": "Classify on the material actually pasted, attached, or retrieved into the model's context. Asking how to configure a tool, which parameters matter, or why a pipeline behaves a certain way puts NO regulated data in the prompt, however regulated the underlying study is.",
+    "destination": "Classify up if the output lands in a regulatory submission, a GxP record, a safety case, or a decision about an identified person. Destination can raise a class that origin alone would not.",
+    "worked_example": "'Write a Nextflow workflow for our WGS joint-genotyping run' is research-unpub or public: no sequence enters the prompt. 'Here are 200 variant calls from our cohort, interpret them' is germline-seq: the sequence is in the prompt. Same study, same scientist, different class, and the router must not conflate them.",
+    "public_carve_out": "Material that is already public and openly consented for unrestricted secondary use stays at its own class and is NOT escalated by subject matter. Openly consented public reference resources are the standard example. The escalate-when-arguable rule applies to genuine ambiguity about YOUR data, never to published reference data."
+  },
+  "data_classes": [
+    {
+      "id": "public",
+      "tier": 1,
+      "label": "Public, already published"
+    },
+    {
+      "id": "internal",
+      "tier": 2,
+      "label": "Internal, not confidential"
+    },
+    {
+      "id": "cci",
+      "tier": 3,
+      "label": "Confidential commercial: pipeline, forecast, contract"
+    },
+    {
+      "id": "predec",
+      "tier": 4,
+      "label": "Pre-decisional: BD, M&A, licensing, diligence"
+    },
+    {
+      "id": "research-unpub",
+      "tier": 4,
+      "label": "Unpublished preclinical research, no human subjects"
+    },
+    {
+      "id": "ts-chem",
+      "tier": 5,
+      "label": "Trade secret: chemical matter, sequences, process know-how"
+    },
+    {
+      "id": "clin-anon",
+      "tier": 5,
+      "label": "Clinical data, anonymized or aggregate"
+    },
+    {
+      "id": "clin-deid",
+      "tier": 6,
+      "label": "Clinical data, de-identified under HIPAA (still GDPR personal data)"
+    },
+    {
+      "id": "germline-seq",
+      "tier": 7,
+      "label": "Human sequence data in the prompt: germline reads, genotypes or variant calls, including the normal arm of a tumour-normal pair",
+      "note": "Sequence is re-identifying in its own right and it identifies relatives who never consented, so removing identifiers does not lower the class. HIPAA's eighteen Safe Harbor identifiers do not list sequence data, which is a recognised gap in the rule rather than a permission; GDPR Article 9 names genetic data explicitly.",
+      "scope": {
+        "applies_when": "Human sequence data enters the prompt: reads, genotypes, VCF records, or per-individual variant lists.",
+        "somatic_and_tumour_normal": "Somatic work is IN SCOPE where the germline is present. A tumour-normal pair contains a germline sample by construction, and a tumour-only call set still carries germline variants that were never filtered out. Classify a somatic workflow here unless the material in the prompt is demonstrably germline-free.",
+        "does_not_apply_when": [
+          "No sequence enters the prompt. Pipeline configuration, parameter choice, tool comparison, error interpretation and code review about a genomics study are research-unpub or public. See classification_scope; blocking these is the fastest way to push genomics work onto a personal account.",
+          "The sequence is from a public resource that is openly consented for unrestricted secondary use. That is public, and it does not escalate.",
+          "The material is aggregate to a level where no individual genotype is recoverable. Which aggregations qualify, at what cohort size, is open item 10 and is the DPO's determination, not the requester's."
+        ],
+        "tier_is_itself_an_open_question": "Placed at tier 7, above clin-deid because the identifiers cannot be removed, and below clin-id only because a sequence without a linked clinical record needs an external reference panel to attribute. If your consent forms or your Data Use Agreements treat sequence as identifiable on its face, this belongs at tier 8. See open item 10."
+      }
+    },
+    {
+      "id": "pv",
+      "tier": 7,
+      "label": "Pharmacovigilance case data, ICSR"
+    },
+    {
+      "id": "gxp-record",
+      "tier": 7,
+      "label": "GxP record supporting a submission or batch release"
+    },
+    {
+      "id": "clin-id",
+      "tier": 8,
+      "label": "Identifiable patient data, PHI or GDPR Article 9"
+    },
+    {
+      "id": "export-durc",
+      "tier": 8,
+      "label": "Export-controlled (EAR/ITAR) or DURC/PEPP-scoped biology"
+    }
+  ],
+  "approver_roles": {
+    "isso": {
+      "title": "Information Security Officer",
+      "sla_days": 5
+    },
+    "privacy": {
+      "title": "Privacy Officer / Data Protection Officer",
+      "sla_days": 10
+    },
+    "qa": {
+      "title": "QA Computerized System Validation lead",
+      "sla_days": 15
+    },
+    "legal": {
+      "title": "Legal, contracts and data-use agreements",
+      "sla_days": 10
+    },
+    "export": {
+      "title": "Empowered Official / export control officer",
+      "sla_days": 15
+    },
+    "ibc": {
+      "title": "Institutional Biosafety Committee",
+      "sla_days": 30
+    },
+    "pv-qppv": {
+      "title": "Qualified Person for Pharmacovigilance",
+      "sla_days": 10
+    },
+    "records": {
+      "title": "Records management and legal hold",
+      "sla_days": 5
+    }
+  },
+  "matrix": {
+    "enclave": {
+      "public": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "internal": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "cci": {
+        "verdict": 2,
+        "rule": "No egress and no vendor retention, so confidential commercial material stays inside the control boundary."
+      },
+      "predec": {
+        "verdict": 2,
+        "rule": "Containment satisfies the confidentiality concern. Records retention still applies to the output."
+      },
+      "research-unpub": {
+        "verdict": 2,
+        "rule": "This is the class the enclave exists for. Widest sanctioned envelope for preclinical work."
+      },
+      "ts-chem": {
+        "verdict": 2,
+        "rule": "Crown-jewel matter belongs here rather than on a commercial endpoint, regardless of contractual no-training terms."
+      },
+      "clin-anon": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "clin-deid": {
+        "verdict": 2,
+        "rule": "Permitted where the de-identification determination is on file. Attach the Safe Harbor checklist or the Expert Determination letter to the workflow record."
+      },
+      "germline-seq": {
+        "verdict": 1,
+        "rule": "The enclave is the correct destination for germline work and containment is technically sufficient, but containment is not the governing constraint. Access is set by the consent, the Data Use Agreement or Data Use Certification, and the approved research use. The authorisation attaches to the named investigator and the approved research use, not to the infrastructure. This is the direct analog of NIH controlled-access genomic data, and it is why there is no self-service route to this class on any platform in the estate. Privacy signs; Legal names the governing agreement. This cell applies only when human sequence enters the prompt. Pipeline configuration, parameter and tool questions about a genomics study put no sequence in the prompt and route at research-unpub or public.",
+        "approver": "privacy"
+      },
+      "pv": {
+        "verdict": 1,
+        "rule": "Containment is necessary but not sufficient. Safety case handling carries a reporting obligation and a validated-system expectation that the enclave does not automatically meet.",
+        "approver": "pv-qppv"
+      },
+      "gxp-record": {
+        "verdict": 1,
+        "rule": "An enclave is not a validated system. Part 11 attributability, audit trail and change control must be demonstrated before any output enters a GxP record. Route to the validated instance unless QA has qualified this enclave for the context of use.",
+        "approver": "qa"
+      },
+      "clin-id": {
+        "verdict": 1,
+        "rule": "Technically containable, legally not automatic. Needs a DPIA, a lawful basis under GDPR Article 9, and confirmation the use sits inside the consent and protocol scope.",
+        "approver": "privacy"
+      },
+      "export-durc": {
+        "verdict": 1,
+        "rule": "Enclave containment does NOT resolve the deemed-export rule. Access by a foreign national inside your own boundary can still be an export, and DURC/PEPP scope requires institutional review upstream of the tool choice.",
+        "approver": "export"
+      }
+    },
+    "gxp": {
+      "public": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "internal": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "cci": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "predec": {
+        "verdict": 1,
+        "rule": "A validated instance retains everything under change control, which is the opposite of what pre-decisional BD material wants. Legal hold and retention review first.",
+        "approver": "records"
+      },
+      "research-unpub": {
+        "verdict": 2,
+        "rule": "Permitted, though usually heavier than the work requires. Use the enclave unless the output is destined for a submission."
+      },
+      "ts-chem": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "clin-anon": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "clin-deid": {
+        "verdict": 2,
+        "rule": "Permitted with the de-identification determination on file."
+      },
+      "germline-seq": {
+        "verdict": 1,
+        "rule": "Validation addresses the record, not the privacy basis or the consent scope. Route here only where the germline result enters a GxP record; otherwise the enclave is the correct destination. DPIA and lawful basis under GDPR Article 9 still required. The authorisation attaches to the named investigator and the approved research use, not to the infrastructure. This is the direct analog of NIH controlled-access genomic data, and it is why there is no self-service route to this class on any platform in the estate. This cell applies only when human sequence enters the prompt. Pipeline configuration, parameter and tool questions about a genomics study put no sequence in the prompt and route at research-unpub or public.",
+        "approver": "privacy"
+      },
+      "pv": {
+        "verdict": 2,
+        "rule": "This is the intended route for safety case work. Audit trail and attributability are the point."
+      },
+      "gxp-record": {
+        "verdict": 2,
+        "rule": "The only environment in this estate with a documented route for records supporting a submission or batch release. Qualification must cover the specific context of use, not the platform in general."
+      },
+      "clin-id": {
+        "verdict": 1,
+        "rule": "Validation addresses the record, not the privacy basis. Still needs DPIA and lawful basis.",
+        "approver": "privacy"
+      },
+      "export-durc": {
+        "verdict": 1,
+        "rule": "Validation is orthogonal to export control. Deemed-export and DURC review still apply.",
+        "approver": "export"
+      }
+    },
+    "claude-ent": {
+      "public": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "internal": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "cci": {
+        "verdict": 2,
+        "rule": "Enterprise terms exclude training on customer content. Confirm the contracted retention window and that it is written into your agreement rather than assumed from a marketing page."
+      },
+      "predec": {
+        "verdict": 2,
+        "rule": "Permitted under enterprise terms. Apply the same records-retention discipline you would to email."
+      },
+      "research-unpub": {
+        "verdict": 2,
+        "rule": "Permitted. The strongest fit in this estate for agentic literature and analysis work, though see the fit table for how much of that is measured."
+      },
+      "ts-chem": {
+        "verdict": 1,
+        "rule": "Contractual no-training is not the same as no-risk for crown-jewel chemical matter or sequence IP. Named approval, and prefer the enclave where the matter is genuinely differentiating.",
+        "approver": "legal"
+      },
+      "clin-anon": {
+        "verdict": 2,
+        "rule": "Permitted where anonymization is documented and irreversible."
+      },
+      "clin-deid": {
+        "verdict": 1,
+        "rule": "The trap cell. HIPAA de-identified is NOT GDPR anonymous; pseudonymized clinical data remains personal data with a controller obligation. Separately, partner and CRO Data Use Agreements frequently carry non-transferability clauses that a prompt to a third-party model breaches regardless of vendor security posture. Two approvers, and Legal must name the governing agreements.",
+        "approver": "privacy"
+      },
+      "germline-seq": {
+        "verdict": 0,
+        "rule": "No documented route. De-identification gives no relief at this class because sequence re-identifies on its own and identifies relatives who did not consent; the HIPAA Safe Harbor list does not reach sequence data. Aggregate to summary statistics where no individual genotype is recoverable, which is a different class, or move the work to the enclave. This cell applies only when human sequence enters the prompt. Pipeline configuration, parameter and tool questions about a genomics study put no sequence in the prompt and route at research-unpub or public. Somatic and tumour-normal material is in scope here because the germline travels with it."
+      },
+      "clin-id": {
+        "verdict": 0,
+        "rule": "Identifiable patient data has no documented route to a general commercial endpoint in this estate. De-identify to a lower class, or move the work to the enclave or the validated instance."
+      },
+      "gxp-record": {
+        "verdict": 0,
+        "rule": "No Part 11 audit trail, no qualification, no change control over model versions. A non-deterministic system whose version can change under you cannot carry a GxP record. This is a validation problem, not a security problem, and a vendor certification does not solve it."
+      },
+      "pv": {
+        "verdict": 0,
+        "rule": "Safety case data carries a regulatory reporting obligation and a validated-system expectation. Route to the validated instance."
+      },
+      "export-durc": {
+        "verdict": 0,
+        "rule": "No route. Export-controlled and DURC/PEPP-scoped material does not go to a commercial endpoint. Escalate to the Empowered Official and, where biology is in scope, the IBC."
+      }
+    },
+    "openai-ent": {
+      "public": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "internal": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "cci": {
+        "verdict": 2,
+        "rule": "Enterprise terms exclude training on customer content. Confirm the contracted retention window."
+      },
+      "predec": {
+        "verdict": 1,
+        "rule": "Confirm the zero-retention and administrative-access posture before pre-decisional BD or M&A material goes near it. This is a contract question, not a product question.",
+        "approver": "legal"
+      },
+      "research-unpub": {
+        "verdict": 2,
+        "rule": "Permitted. Typically the deepest install base, which makes prompting practice portable across the estate."
+      },
+      "ts-chem": {
+        "verdict": 1,
+        "rule": "Named approval. Prefer the enclave for genuinely differentiating matter.",
+        "approver": "legal"
+      },
+      "clin-anon": {
+        "verdict": 2,
+        "rule": "Permitted where anonymization is documented and irreversible."
+      },
+      "clin-deid": {
+        "verdict": 1,
+        "rule": "The trap cell. HIPAA de-identified is NOT GDPR anonymous; pseudonymized clinical data remains personal data with a controller obligation. Separately, partner and CRO Data Use Agreements frequently carry non-transferability clauses that a prompt to a third-party model breaches regardless of vendor security posture. Two approvers, and Legal must name the governing agreements.",
+        "approver": "privacy"
+      },
+      "germline-seq": {
+        "verdict": 0,
+        "rule": "No documented route. De-identification gives no relief at this class because sequence re-identifies on its own and identifies relatives who did not consent; the HIPAA Safe Harbor list does not reach sequence data. Aggregate to summary statistics where no individual genotype is recoverable, which is a different class, or move the work to the enclave. This cell applies only when human sequence enters the prompt. Pipeline configuration, parameter and tool questions about a genomics study put no sequence in the prompt and route at research-unpub or public. Somatic and tumour-normal material is in scope here because the germline travels with it."
+      },
+      "clin-id": {
+        "verdict": 0,
+        "rule": "Identifiable patient data has no documented route to a general commercial endpoint in this estate. De-identify to a lower class, or move the work to the enclave or the validated instance."
+      },
+      "gxp-record": {
+        "verdict": 0,
+        "rule": "No Part 11 audit trail, no qualification, no change control over model versions. A non-deterministic system whose version can change under you cannot carry a GxP record. This is a validation problem, not a security problem, and a vendor certification does not solve it."
+      },
+      "pv": {
+        "verdict": 0,
+        "rule": "Safety case data carries a regulatory reporting obligation and a validated-system expectation. Route to the validated instance."
+      },
+      "export-durc": {
+        "verdict": 0,
+        "rule": "No route. Export-controlled and DURC/PEPP-scoped material does not go to a commercial endpoint. Escalate to the Empowered Official and, where biology is in scope, the IBC."
+      }
+    },
+    "gemini-ent": {
+      "public": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "internal": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "cci": {
+        "verdict": 2,
+        "rule": "Enterprise and Vertex terms exclude training on customer content. Confirm which of the two your users are actually hitting; the consumer surface has different terms and users do not distinguish them."
+      },
+      "predec": {
+        "verdict": 2,
+        "rule": "Permitted under enterprise terms."
+      },
+      "research-unpub": {
+        "verdict": 2,
+        "rule": "Permitted."
+      },
+      "ts-chem": {
+        "verdict": 1,
+        "rule": "Named approval. Prefer the enclave for differentiating matter.",
+        "approver": "legal"
+      },
+      "clin-anon": {
+        "verdict": 2,
+        "rule": "Permitted where anonymization is documented and irreversible."
+      },
+      "clin-deid": {
+        "verdict": 1,
+        "rule": "The trap cell. HIPAA de-identified is NOT GDPR anonymous; pseudonymized clinical data remains personal data with a controller obligation. Separately, partner and CRO Data Use Agreements frequently carry non-transferability clauses that a prompt to a third-party model breaches regardless of vendor security posture. Two approvers, and Legal must name the governing agreements.",
+        "approver": "privacy"
+      },
+      "germline-seq": {
+        "verdict": 0,
+        "rule": "No documented route. De-identification gives no relief at this class because sequence re-identifies on its own and identifies relatives who did not consent; the HIPAA Safe Harbor list does not reach sequence data. Aggregate to summary statistics where no individual genotype is recoverable, which is a different class, or move the work to the enclave. This cell applies only when human sequence enters the prompt. Pipeline configuration, parameter and tool questions about a genomics study put no sequence in the prompt and route at research-unpub or public. Somatic and tumour-normal material is in scope here because the germline travels with it."
+      },
+      "clin-id": {
+        "verdict": 0,
+        "rule": "Identifiable patient data has no documented route to a general commercial endpoint in this estate. De-identify to a lower class, or move the work to the enclave or the validated instance."
+      },
+      "gxp-record": {
+        "verdict": 0,
+        "rule": "No Part 11 audit trail, no qualification, no change control over model versions. A non-deterministic system whose version can change under you cannot carry a GxP record. This is a validation problem, not a security problem, and a vendor certification does not solve it."
+      },
+      "pv": {
+        "verdict": 0,
+        "rule": "Safety case data carries a regulatory reporting obligation and a validated-system expectation. Route to the validated instance."
+      },
+      "export-durc": {
+        "verdict": 0,
+        "rule": "No route. Export-controlled and DURC/PEPP-scoped material does not go to a commercial endpoint. Escalate to the Empowered Official and, where biology is in scope, the IBC."
+      }
+    },
+    "copilot": {
+      "public": {
+        "verdict": 2,
+        "rule": "Inside the documented envelope for this class."
+      },
+      "internal": {
+        "verdict": 2,
+        "rule": "Grounded in what already lives in the tenant. Strong here and honest about it."
+      },
+      "cci": {
+        "verdict": 2,
+        "rule": "Permitted at whatever classification the tenant already holds. Copilot inherits your existing permissions, so it surfaces oversharing rather than creating it."
+      },
+      "predec": {
+        "verdict": 1,
+        "rule": "Tenant grounding means Copilot can reach whatever sits in mailboxes and SharePoint. Pre-decisional content needs a retention and access review before Copilot is pointed at it.",
+        "approver": "records"
+      },
+      "research-unpub": {
+        "verdict": 1,
+        "rule": "Only where the data already lives in the tenant at the right classification. Do NOT move research data into the tenant in order to reach Copilot. That is a migration decision disguised as a tool choice.",
+        "approver": "isso"
+      },
+      "ts-chem": {
+        "verdict": 1,
+        "rule": "Same constraint. Tenant grounding makes reach the risk.",
+        "approver": "isso"
+      },
+      "clin-anon": {
+        "verdict": 1,
+        "rule": "Not a research data platform. Permitted only for aggregate material already in the tenant.",
+        "approver": "isso"
+      },
+      "clin-deid": {
+        "verdict": 0,
+        "rule": "Not scoped for clinical research data. Tenant grounding makes this worse rather than better: anything Copilot can reach it can also surface to a colleague who is not named on the study. Route to the enclave."
+      },
+      "germline-seq": {
+        "verdict": 0,
+        "rule": "No route, and the risk here is reach rather than egress. Tenant grounding will surface sequence data to a colleague who is not named on the study and not covered by the consent. Route to the enclave. This cell applies only when human sequence enters the prompt. Pipeline configuration, parameter and tool questions about a genomics study put no sequence in the prompt and route at research-unpub or public. Somatic and tumour-normal material is in scope here because the germline travels with it."
+      },
+      "clin-id": {
+        "verdict": 0,
+        "rule": "Identifiable patient data has no documented route to a general commercial endpoint in this estate. De-identify to a lower class, or move the work to the enclave or the validated instance."
+      },
+      "gxp-record": {
+        "verdict": 0,
+        "rule": "No Part 11 audit trail, no qualification, no change control over model versions. A non-deterministic system whose version can change under you cannot carry a GxP record. This is a validation problem, not a security problem, and a vendor certification does not solve it."
+      },
+      "pv": {
+        "verdict": 0,
+        "rule": "Safety case data carries a regulatory reporting obligation and a validated-system expectation. Route to the validated instance."
+      },
+      "export-durc": {
+        "verdict": 0,
+        "rule": "No route. Export-controlled and DURC/PEPP-scoped material does not go to a commercial endpoint. Escalate to the Empowered Official and, where biology is in scope, the IBC."
+      }
+    }
+  },
+  "use_cases": [
+    {
+      "id": "bio-code",
+      "label": "Bioinformatics and analysis code (Python, R, Nextflow)"
+    },
+    {
+      "id": "omics",
+      "label": "Omics interpretation: single-cell, variant, expression"
+    },
+    {
+      "id": "chem",
+      "label": "Cheminformatics: SAR, property prediction, docking triage"
+    },
+    {
+      "id": "imaging",
+      "label": "Imaging analysis and segmentation support"
+    },
+    {
+      "id": "lit",
+      "label": "Literature and evidence synthesis"
+    },
+    {
+      "id": "reg-write",
+      "label": "Regulatory writing: protocol, IB, CSR, submission modules"
+    },
+    {
+      "id": "pv-triage",
+      "label": "Pharmacovigilance narrative triage and coding"
+    },
+    {
+      "id": "cmc",
+      "label": "CMC and manufacturing: deviation, batch record analysis"
+    },
+    {
+      "id": "bd",
+      "label": "Competitive intelligence and diligence"
+    },
+    {
+      "id": "office",
+      "label": "Office productivity: mail, documents, meetings"
+    }
+  ],
+  "fit": {
+    "bio-code": {
+      "enclave": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Depends entirely on which weights you host. An open-weights enclave model is materially behind the frontier commercial coding models on this task."
+      },
+      "gxp": {
+        "score": 2,
+        "basis": "ASSUMED",
+        "note": "Validated instances lag frontier model versions by design. That lag is the price of qualification."
+      },
+      "claude-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Agentic coding via Claude Code is widely preferred for multi-file pipeline work. Community reports on domain-specific bioinformatics accuracy are mixed against the OpenAI coding stack. UNMEASURED HERE."
+      },
+      "openai-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Codex is the stated workhorse for several visible bioinformatics tool authors. One community-posted benchmark put it a few points ahead of the Claude stack on bioinformatics coding tasks. Single source, not independently reproduced, and not run on your code. UNMEASURED HERE. Logged as claim C7 in docs/CLAIMS-REGISTER.md, UNVERIFIED, single unreproduced source."
+      },
+      "gemini-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Fewer domain-specific coding reports in this community."
+      },
+      "copilot": {
+        "score": 1,
+        "basis": "ASSUMED",
+        "note": "Not a code-generation surface for pipeline work."
+      }
+    },
+    "omics": {
+      "enclave": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Model-dependent."
+      },
+      "gxp": {
+        "score": 2,
+        "basis": "ASSUMED",
+        "note": "Version lag."
+      },
+      "claude-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Connector ecosystem for genomics tooling is the differentiator claimed. The claim is about orchestration, not about the model's own biological reasoning, and the two are routinely conflated."
+      },
+      "openai-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Strong reported performance on analysis and hypothesis work."
+      },
+      "gemini-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Fewer domain reports."
+      },
+      "copilot": {
+        "score": 1,
+        "basis": "ASSUMED",
+        "note": "Out of scope."
+      }
+    },
+    "chem": {
+      "enclave": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Model-dependent."
+      },
+      "gxp": {
+        "score": 2,
+        "basis": "ASSUMED",
+        "note": "Version lag."
+      },
+      "claude-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Cheminformatics is thinner than genomics in published evaluation."
+      },
+      "openai-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Same."
+      },
+      "gemini-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Same."
+      },
+      "copilot": {
+        "score": 1,
+        "basis": "ASSUMED",
+        "note": "Out of scope."
+      }
+    },
+    "imaging": {
+      "enclave": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Model-dependent."
+      },
+      "gxp": {
+        "score": 2,
+        "basis": "ASSUMED",
+        "note": "Version lag."
+      },
+      "claude-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Published head-to-head radiological imaging comparisons exist across the frontier vendors. They are on general imaging tasks, not your modality, and the rankings invert between studies twelve months apart. Downgraded from EXTERNAL to ASSUMED on 2026-08-29. The cell asserted that published head-to-head comparisons exist but named none, and this system's own rubric defines EXTERNAL as a CITED published study. An uncited pointer to a literature that exists somewhere is an inference, not a citation. Restore the EXTERNAL tag only with a specific study, its date, and the statement that it was not run on this company's work."
+      },
+      "openai-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Same body of evidence, same caveat. Downgraded from EXTERNAL to ASSUMED on 2026-08-29. The cell asserted that published head-to-head comparisons exist but named none, and this system's own rubric defines EXTERNAL as a CITED published study. An uncited pointer to a literature that exists somewhere is an inference, not a citation. Restore the EXTERNAL tag only with a specific study, its date, and the statement that it was not run on this company's work."
+      },
+      "gemini-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Same body of evidence, same caveat. Downgraded from EXTERNAL to ASSUMED on 2026-08-29. The cell asserted that published head-to-head comparisons exist but named none, and this system's own rubric defines EXTERNAL as a CITED published study. An uncited pointer to a literature that exists somewhere is an inference, not a citation. Restore the EXTERNAL tag only with a specific study, its date, and the statement that it was not run on this company's work."
+      },
+      "copilot": {
+        "score": 1,
+        "basis": "ASSUMED",
+        "note": "Out of scope."
+      }
+    },
+    "lit": {
+      "enclave": {
+        "score": 2,
+        "basis": "ASSUMED",
+        "note": "Retrieval quality depends on what you connected, and enclaves usually have less."
+      },
+      "gxp": {
+        "score": 2,
+        "basis": "ASSUMED",
+        "note": "Not the intended surface."
+      },
+      "claude-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Literature connector integration is the strongest single claim in the vendor set. Beta-user reports are enthusiastic; at least one credible community critique argues the marginal contribution of the model versus the surrounding retrieval scaffolding has not been isolated. That critique is correct and this score is ASSUMED because of it."
+      },
+      "openai-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Published comparisons on biomedical question answering. Downgraded from EXTERNAL to ASSUMED on 2026-08-29. The cell asserted that published head-to-head comparisons exist but named none, and this system's own rubric defines EXTERNAL as a CITED published study. An uncited pointer to a literature that exists somewhere is an inference, not a citation. Restore the EXTERNAL tag only with a specific study, its date, and the statement that it was not run on this company's work."
+      },
+      "gemini-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Published comparisons, generally mid-pack in the sampled studies. Downgraded from EXTERNAL to ASSUMED on 2026-08-29. The cell asserted that published head-to-head comparisons exist but named none, and this system's own rubric defines EXTERNAL as a CITED published study. An uncited pointer to a literature that exists somewhere is an inference, not a citation. Restore the EXTERNAL tag only with a specific study, its date, and the statement that it was not run on this company's work."
+      },
+      "copilot": {
+        "score": 2,
+        "basis": "ASSUMED",
+        "note": "Tenant-grounded, not literature-grounded."
+      }
+    },
+    "reg-write": {
+      "enclave": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Model-dependent."
+      },
+      "gxp": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "The permitted route, not necessarily the best writer. This gap is exactly why permission and capability are scored separately."
+      },
+      "claude-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Long-document structure and consistency are the reported strength."
+      },
+      "openai-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Comparable."
+      },
+      "gemini-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Comparable."
+      },
+      "copilot": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Good at document mechanics inside the tenant, weak on regulatory substance."
+      }
+    },
+    "pv-triage": {
+      "enclave": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Model-dependent."
+      },
+      "gxp": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "The only permitted route. Capability is unmeasured and should be measured first, because this is a high-consequence context of use."
+      },
+      "claude-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Blocked anyway. Score retained so the gap is visible if policy changes."
+      },
+      "openai-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Blocked anyway."
+      },
+      "gemini-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Blocked anyway."
+      },
+      "copilot": {
+        "score": 1,
+        "basis": "ASSUMED",
+        "note": "Blocked anyway."
+      }
+    },
+    "cmc": {
+      "enclave": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Model-dependent."
+      },
+      "gxp": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "The permitted route."
+      },
+      "claude-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Blocked for the record itself; usable on de-identified process discussion."
+      },
+      "openai-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Same."
+      },
+      "gemini-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Same."
+      },
+      "copilot": {
+        "score": 2,
+        "basis": "ASSUMED",
+        "note": "Tenant documents only."
+      }
+    },
+    "bd": {
+      "enclave": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Model-dependent."
+      },
+      "gxp": {
+        "score": 2,
+        "basis": "ASSUMED",
+        "note": "Wrong tool."
+      },
+      "claude-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Long-document synthesis."
+      },
+      "openai-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Broad retrieval."
+      },
+      "gemini-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Broad retrieval."
+      },
+      "copilot": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Strong when the material is already in the tenant."
+      }
+    },
+    "office": {
+      "enclave": {
+        "score": 1,
+        "basis": "ASSUMED",
+        "note": "Not the surface."
+      },
+      "gxp": {
+        "score": 1,
+        "basis": "ASSUMED",
+        "note": "Not the surface."
+      },
+      "claude-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Capable but outside the tenant."
+      },
+      "openai-ent": {
+        "score": 3,
+        "basis": "ASSUMED",
+        "note": "Capable but outside the tenant."
+      },
+      "gemini-ent": {
+        "score": 4,
+        "basis": "ASSUMED",
+        "note": "Strong where the estate is on Workspace."
+      },
+      "copilot": {
+        "score": 5,
+        "basis": "ASSUMED",
+        "note": "This is what it is for, and it is the right answer here more often than the scientific platforms are."
+      }
+    }
+  },
+  "continuity_flags": {
+    "_doctrine": "A platform can be withdrawn from an operating division on a day's notice. Two reported events anchor this: a vendor pulled government-wide in February 2026, switched off at one department in March and restored by injunction in April; and a production regulatory system re-pointed to another vendor on roughly seventy-two hours' notice, requiring re-engineering and revalidation of a retrieval pipeline. BOTH ARE TAGGED UNVERIFIED as claims C1 and C2 in docs/CLAIMS-REGISTER.md - they are reports, not findings, and the vendor-specific detail in C1 must not be repeated outside the company. The doctrine stands without them: availability is a contract variable, so any workflow that would be an emergency to move needs a written alternate before it goes to production, not after.",
+    "claude-ent": {
+      "level": "watch",
+      "text": "Demonstrated availability interruption during 2026 in the federal context, restored by injunction, with litigation open. Commercial terms differ from federal ones, but the precedent is that availability is a contract variable and not a given. Any production workflow on this platform carries a verified alternate and a continuity reserve. NOTE: the availability claim behind this flag is C1 in docs/CLAIMS-REGISTER.md and is UNVERIFIED. A `watch` level on a named vendor is a commercially consequential statement; source it or drop the vendor-specific narrative before this leaves the company."
+    },
+    "openai-ent": {
+      "level": "normal",
+      "text": "No availability interruption on record in this estate. Model-version deprecation cadence is the live risk rather than withdrawal: a workflow pinned to a deprecated version is a swap with a deadline."
+    },
+    "gemini-ent": {
+      "level": "normal",
+      "text": "Model-version deprecation cadence is the live risk."
+    },
+    "copilot": {
+      "level": "normal",
+      "text": "Tenant-coupled. The continuity risk is a tenant or licensing change rather than a vendor action."
+    },
+    "enclave": {
+      "level": "low",
+      "text": "You control availability. The risk transfers to your own operations and to the model-weights supply chain."
+    },
+    "gxp": {
+      "level": "low",
+      "text": "You control availability. A swap here is a revalidation event and should be costed as one."
+    }
+  }
+}
